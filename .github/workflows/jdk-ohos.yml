@@ -146,6 +146,7 @@ jobs:
           cp "$RUNNER_TEMP"/jdk-work-${{ matrix.major }}-${{ matrix.arch }}/build-*.log dist/logs/ 2>/dev/null || true
 
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: runtime-jdk${{ matrix.major }}-${{ matrix.arch }}
           path: dist/
