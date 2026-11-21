@@ -82,7 +82,8 @@ rename (`uabs` → `g_uabs`, upstream JDK-8354941) needed by the JDK 21 pin.
 ## Build locally (Linux x86_64)
 
 Requirements: Linux, Python 3, a C/C++ host toolchain (`build-essential`),
-`autoconf`, `zip`, `unzip`, `libasound2-dev`, a boot JDK matching the target
+`autoconf`, `zip`, `unzip`, `libasound2-dev`, GNU coreutils (not the uutils
+variant shipped by Ubuntu 25.10+), a boot JDK matching the target
 major (Temurin 21 or 25), and the HarmonyOS command-line tools / SDK containing
 `native/`.
 

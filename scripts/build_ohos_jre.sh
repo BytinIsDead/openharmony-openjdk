@@ -91,6 +91,11 @@ case "$BOOT_MAJOR" in 1) BOOT_MAJOR="$(echo "$BOOT_VERSION" | cut -d. -f2)" ;; e
 [ "${BOOT_MAJOR:-0}" -ge "$MAJOR" ] 2>/dev/null \
   || die "boot JDK is $BOOT_VERSION; JDK $MAJOR (or newer within the same line) is required"
 
+# OpenJDK probes 'date --version' for GNU and otherwise emits BSD '-j' flags.
+# uutils coreutils (Ubuntu 25.10+) fails that probe and breaks jar --date.
+date --version 2>/dev/null | grep -q "GNU coreutils" \
+  || die "GNU coreutils is required; install coreutils-from-gnu and remove coreutils-from-uutils"
+
 read -r SRC_REPO SRC_COMMIT < <(python3 - "$INPUTS_JSON" "$MAJOR" <<'PY'
 import json, sys
 item = json.load(open(sys.argv[1], encoding="utf-8"))["runtimes"][sys.argv[2]]

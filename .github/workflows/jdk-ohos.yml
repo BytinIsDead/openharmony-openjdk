@@ -69,6 +69,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             autoconf build-essential clang zip unzip file libasound2-dev
+          # Ubuntu 25.10+ ships uutils coreutils by default; the OpenJDK build
+          # probes for GNU date and silently takes a BSD code path otherwise.
+          if ! date --version 2>/dev/null | grep -q "GNU coreutils"; then
+            sudo apt-get install -y --no-install-recommends coreutils-from-gnu || true
+            if ! date --version 2>/dev/null | grep -q "GNU coreutils"; then
+              sudo apt-get remove -y --allow-remove-essential coreutils-from-uutils
+            fi
+          fi
+          date --version | head -1
 
       - name: Cache HarmonyOS toolchain zip
         id: cache
