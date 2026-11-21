@@ -74,6 +74,11 @@ The OpenJDK sources are cloned from upstream at the commits recorded in
 | 21 | `https://github.com/openjdk/jdk21u.git` | `dfcd8d2eecfe62e91070244d8eb10906dc3c812d` |
 | 25 | `https://github.com/openjdk/jdk25u.git` | `e8f9ebe5ea813b675410a89fbfafa22e42c04e6a` |
 
+`scripts/patches/<major>/` carries small upstream-compatible fixups applied
+after the community patch series; a fixup is skipped when the pinned commit
+already contains it. It currently holds the glibc 2.42 `uabs` name-collision
+rename (`uabs` → `g_uabs`, upstream JDK-8354941) needed by the JDK 21 pin.
+
 ## Build locally (Linux x86_64)
 
 Requirements: Linux, Python 3, a C/C++ host toolchain (`build-essential`),

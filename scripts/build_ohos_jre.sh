@@ -286,6 +286,23 @@ else
   echo "Source tree already modified; skipping patch application"
 fi
 
+# Repository-local compatibility patches for the pinned upstream commit.
+LOCAL_PATCH_DIR="$TREE_DIR/scripts/patches/jdk$MAJOR"
+if [ -d "$LOCAL_PATCH_DIR" ]; then
+  for patch in "$LOCAL_PATCH_DIR"/*.patch; do
+    [ -e "$patch" ] || continue
+    local_name="$(basename "$patch")"
+    if git -C "$SRC" apply --check "$patch" 2>/dev/null; then
+      git -C "$SRC" apply "$patch"
+      echo "Applied local patch $local_name"
+    elif git -C "$SRC" apply --reverse --check "$patch" 2>/dev/null; then
+      echo "Local patch already integrated upstream: $local_name"
+    else
+      echo "warning: local patch $local_name neither applies nor is present (assuming upstream fixed)"
+    fi
+  done
+fi
+
 # ---------------------------------------------------------------------------
 # 5. Configure and build
 # ---------------------------------------------------------------------------
