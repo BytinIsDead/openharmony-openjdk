@@ -323,7 +323,6 @@ bash configure \
   --with-freetype=bundled \
   --enable-headless-only \
   --disable-warnings-as-errors \
-  --with-toolchain-type=clang \
   CC="$TC/$TRIPLE-gcc" \
   CXX="$TC/$TRIPLE-g++" \
   CPP="$TC/$TRIPLE-gcc -E -I$ARCH_INCLUDE -I$WORK_DIR/stub-headers --target=$TRIPLE --sysroot=$SYSROOT" \
