@@ -327,7 +327,9 @@ export SOURCE_DATE_EPOCH="$(git -C "$SRC" log -1 --format=%ct)"
 export PATH="$TC:$PATH"
 
 # Some OHOS SDK headers (e.g. ohaudio) use bool from plain C without
-# including <stdbool.h>; the JavaSound OHOS units include them directly.
+# including <stdbool.h>; scripts/patches/<major>/ fixes the JavaSound
+# sources. Do not add -include stdbool.h to CFLAGS_JDKLIB: the C
+# preprocessor also generates Java sources, where true/false must stay.
 cd "$SRC"
 echo "=== configure ==="
 set +e
@@ -338,7 +340,7 @@ bash configure \
   --with-debug-level=release \
   --with-native-debug-symbols=none \
   --with-boot-jdk="$JAVA_HOME" \
-  --with-extra-cflags="$COMMON_FLAGS -include stdbool.h" \
+  --with-extra-cflags="$COMMON_FLAGS" \
   --with-extra-cxxflags="$EXTRA_CXXFLAGS" \
   --with-extra-ldflags="$EXTRA_LDFLAGS" \
   --x-includes=/dev/null \

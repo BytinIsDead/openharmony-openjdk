@@ -77,7 +77,9 @@ The OpenJDK sources are cloned from upstream at the commits recorded in
 `scripts/patches/<major>/` carries small upstream-compatible fixups applied
 after the community patch series; a fixup is skipped when the pinned commit
 already contains it. It currently holds the glibc 2.42 `uabs` name-collision
-rename (`uabs` → `g_uabs`, upstream JDK-8354941) needed by the JDK 21 pin.
+rename (`uabs` → `g_uabs`, upstream JDK-8354941) needed by the JDK 21 pin and a
+`<stdbool.h>` include for the OHOS JavaSound port helper, whose SDK headers use
+`bool` from plain C.
 
 ## Build locally (Linux x86_64)
 
