@@ -130,7 +130,7 @@ jobs:
         env:
           RELEASE_BASE: https://github.com/${{ github.repository }}/releases/download/${{ env.RELEASE_TAG }}
         run: |
-          scripts/build_ohos_jre.sh \
+          bash scripts/build_ohos_jre.sh \
             --major "${{ matrix.major }}" \
             --arch "${{ matrix.arch }}" \
             --native "$OHOS_NATIVE" \
