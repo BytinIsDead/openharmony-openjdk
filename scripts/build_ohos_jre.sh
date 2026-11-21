@@ -326,6 +326,8 @@ EXTRA_LDFLAGS="--target=$TRIPLE --sysroot=$SYSROOT -fuse-ld=lld \
 export SOURCE_DATE_EPOCH="$(git -C "$SRC" log -1 --format=%ct)"
 export PATH="$TC:$PATH"
 
+# Some OHOS SDK headers (e.g. ohaudio) use bool from plain C without
+# including <stdbool.h>; the JavaSound OHOS units include them directly.
 cd "$SRC"
 echo "=== configure ==="
 set +e
@@ -336,8 +338,6 @@ bash configure \
   --with-debug-level=release \
   --with-native-debug-symbols=none \
   --with-boot-jdk="$JAVA_HOME" \
-  # Some OHOS SDK headers (e.g. ohaudio) use bool from plain C without
-  # including <stdbool.h>; the JavaSound OHOS units include them directly.
   --with-extra-cflags="$COMMON_FLAGS -include stdbool.h" \
   --with-extra-cxxflags="$EXTRA_CXXFLAGS" \
   --with-extra-ldflags="$EXTRA_LDFLAGS" \
