@@ -8,15 +8,16 @@ file, You can obtain one at https://mozilla.org/MPL/2.0/.
 -->
 # OpenHarmony OpenJDK for x86_64
 
-Cross-build tree for the **x86_64 OpenHarmony Java runtime** used by
-[MC4HOS](https://github.com/BytinIsDead/MC4HOS). It produces standard runtime
+Cross-build tree for the **x86_64 and aarch64 OpenHarmony Java runtimes** used
+by [MC4HOS](https://github.com/BytinIsDead/MC4HOS). It produces standard runtime
 packs; the build scripts and workflows are MPL-2.0 code, the produced JDK
 images are GPLv2 + Classpath Exception works distributed as release assets
 (never committed).
 
-The only public OHOS OpenJDK artifacts available at the time of writing are
-aarch64 builds, so this tree cross-compiles pinned upstream JDK sources plus
-the OHOS patch series for `x86_64-linux-ohos` (musl).
+Public aarch64 OHOS OpenJDK builds exist upstream, but this tree builds both
+targets from the same pinned sources and patches so the two ABIs share one
+provenance: pinned upstream JDK sources plus the OHOS patch series, for
+`x86_64-linux-ohos` and `aarch64-linux-ohos` (musl).
 
 ## What gets built
 
@@ -24,6 +25,8 @@ the OHOS patch series for `x86_64-linux-ohos` (musl).
 |---|---|---|---|
 | Runtime | 21 | `x86_64-linux-ohos` (musl) | `jre21-ohos-x86_64.zip` |
 | Runtime | 25 | `x86_64-linux-ohos` (musl) | `jre25-ohos-x86_64.zip` |
+| Runtime | 21 | `aarch64-linux-ohos` (musl) | `jre21-ohos-aarch64.zip` |
+| Runtime | 25 | `aarch64-linux-ohos` (musl) | `jre25-ohos-aarch64.zip` |
 
 Each zip contains a complete JDK image rooted at the archive root
 (`bin/`, `lib/`, `legal/`, `release`). MC4HOS writes its own `runtime.json`
@@ -31,15 +34,16 @@ marker after extraction, so the pack itself carries no install state.
 
 ## Release
 
-`.github/workflows/jdk-x86_64.yml` builds both majors and publishes them to
-the `jdk-x86_64-v1` release:
+`.github/workflows/jdk-ohos.yml` builds both majors for both ABIs and
+publishes them to the `jdk-ohos-v1` release:
 
 - `jre21-ohos-x86_64.zip`, `jre25-ohos-x86_64.zip`
+- `jre21-ohos-aarch64.zip`, `jre25-ohos-aarch64.zip`
 - `runtime-catalog.json` with name / ABI / size / SHA-256 / pack URL
 - `SHA256SUMS`
 
-Run **Actions → OpenJDK x86_64 runtime → Run workflow** with
-`publish = true`. Pushing a `jdk-x86_64-v*` tag builds and publishes too.
+Run **Actions → OpenJDK OHOS runtimes → Run workflow** with
+`publish = true`. Pushing a `jdk-ohos-v*` tag builds and publishes too.
 
 ## Consumed by MC4HOS
 
@@ -84,9 +88,10 @@ export OHOS_NATIVE=/path/to/commandline-tools/sdk/default/openharmony/native
 # 2. Fetch the pinned patch/stub archive for the target major:
 python3 scripts/fetch_inputs.py --major 21 --dest /tmp/jdk21-inputs
 
-# 3. Cross-compile and package:
-JAVA_HOME=/path/to/temurin-21 scripts/build_x86_64.sh \
+# 3. Cross-compile and package (add --arch aarch64 for ARM):
+JAVA_HOME=/path/to/temurin-21 scripts/build_ohos_jre.sh \
   --major 21 \
+  --arch x86_64 \
   --native "$OHOS_NATIVE" \
   --inputs /tmp/jdk21-inputs \
   --work /tmp/jdk21-build \
@@ -94,8 +99,8 @@ JAVA_HOME=/path/to/temurin-21 scripts/build_x86_64.sh \
 ```
 
 The output is `/tmp/jdk21-out/jre21-ohos-x86_64.zip`, its `.sha256` file, and a
-one-entry `runtime-catalog-21.json`. For Java 25, pass `--major 25` with a
-Temurin 25 `JAVA_HOME`.
+one-entry `runtime-catalog-21-x86_64.json`. For Java 25, pass `--major 25`
+with a Temurin 25 `JAVA_HOME`; for ARM use `--arch aarch64`.
 
 ## Licensing
 

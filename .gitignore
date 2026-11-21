@@ -1,6 +1,6 @@
 dist/
 out/
-work*/
+/work*/
 __pycache__/
 *.pyc
 .DS_Store
