@@ -336,7 +336,9 @@ bash configure \
   --with-debug-level=release \
   --with-native-debug-symbols=none \
   --with-boot-jdk="$JAVA_HOME" \
-  --with-extra-cflags="$COMMON_FLAGS" \
+  # Some OHOS SDK headers (e.g. ohaudio) use bool from plain C without
+  # including <stdbool.h>; the JavaSound OHOS units include them directly.
+  --with-extra-cflags="$COMMON_FLAGS -include stdbool.h" \
   --with-extra-cxxflags="$EXTRA_CXXFLAGS" \
   --with-extra-ldflags="$EXTRA_LDFLAGS" \
   --x-includes=/dev/null \
