@@ -68,7 +68,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            autoconf build-essential zip unzip file libasound2-dev
+            autoconf build-essential clang zip unzip file libasound2-dev
 
       - name: Cache HarmonyOS toolchain zip
         id: cache

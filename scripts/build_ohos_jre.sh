@@ -323,6 +323,7 @@ bash configure \
   --with-freetype=bundled \
   --enable-headless-only \
   --disable-warnings-as-errors \
+  --with-toolchain-type=clang \
   CC="$TC/$TRIPLE-gcc" \
   CXX="$TC/$TRIPLE-g++" \
   CPP="$TC/$TRIPLE-gcc -E -I$ARCH_INCLUDE -I$WORK_DIR/stub-headers --target=$TRIPLE --sysroot=$SYSROOT" \
@@ -331,8 +332,8 @@ bash configure \
   STRIP="$TC/$TRIPLE-strip" \
   NM="$TC/$TRIPLE-nm" \
   OBJCOPY="$TC/$TRIPLE-objcopy" \
-  BUILD_CC="$(command -v gcc)" \
-  BUILD_CXX="$(command -v g++)" \
+  BUILD_CC="$(command -v clang)" \
+  BUILD_CXX="$(command -v clang++)" \
   2>&1 | tee "$WORK_DIR/configure-$MAJOR.log"
 CONFIGURE_RC=${PIPESTATUS[0]}
 set -e
