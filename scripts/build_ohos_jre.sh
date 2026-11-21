@@ -291,7 +291,7 @@ fi
 # ---------------------------------------------------------------------------
 COMMON_FLAGS="--target=$TRIPLE --sysroot=$SYSROOT -fPIC \
 -D__OHOS__=1 -D__OHOS_FAMILY__=1 -D__OHOS_Major__=0 -D__MUSL__ -DMUSL_LIBC \
-$ARCH_INCLUDE -I$WORK_DIR/stub-headers -isystem $LIBCXX_INC \
+-I$ARCH_INCLUDE -I$WORK_DIR/stub-headers -isystem $LIBCXX_INC \
 -B$TARGET_LIB -L$TARGET_LIB -rtlib=compiler-rt -unwindlib=none"
 if [ -d "$BUILD_INPUTS/prebuilt/jdk/$MAJOR/shims" ]; then
   COMMON_FLAGS="-I$BUILD_INPUTS/prebuilt/jdk/$MAJOR/shims $COMMON_FLAGS"
@@ -306,6 +306,7 @@ export PATH="$TC:$PATH"
 
 cd "$SRC"
 echo "=== configure ==="
+set +e
 bash configure \
   --build=x86_64-unknown-linux-gnu \
   --openjdk-target=$ARCH-unknown-linux-musl \
@@ -325,8 +326,8 @@ bash configure \
   --with-toolchain-type=clang \
   CC="$TC/$TRIPLE-gcc" \
   CXX="$TC/$TRIPLE-g++" \
-  CPP="$TC/$TRIPLE-gcc -E $ARCH_INCLUDE -I$WORK_DIR/stub-headers --target=$TRIPLE --sysroot=$SYSROOT" \
-  CXXCPP="$TC/$TRIPLE-g++ -E $ARCH_INCLUDE -I$WORK_DIR/stub-headers --target=$TRIPLE --sysroot=$SYSROOT" \
+  CPP="$TC/$TRIPLE-gcc -E -I$ARCH_INCLUDE -I$WORK_DIR/stub-headers --target=$TRIPLE --sysroot=$SYSROOT" \
+  CXXCPP="$TC/$TRIPLE-g++ -E -I$ARCH_INCLUDE -I$WORK_DIR/stub-headers --target=$TRIPLE --sysroot=$SYSROOT" \
   AR="$TC/$TRIPLE-ar" \
   STRIP="$TC/$TRIPLE-strip" \
   NM="$TC/$TRIPLE-nm" \
@@ -334,6 +335,13 @@ bash configure \
   BUILD_CC="$(command -v gcc)" \
   BUILD_CXX="$(command -v g++)" \
   2>&1 | tee "$WORK_DIR/configure-$MAJOR.log"
+CONFIGURE_RC=${PIPESTATUS[0]}
+set -e
+if [ "$CONFIGURE_RC" -ne 0 ]; then
+  echo "=== config.log (tail) ==="
+  tail -n 400 config.log || true
+  exit "$CONFIGURE_RC"
+fi
 
 echo "=== make images (JOBS=$JOBS) ==="
 make images JOBS="$JOBS" 2>&1 | tee "$WORK_DIR/build-$MAJOR.log"
