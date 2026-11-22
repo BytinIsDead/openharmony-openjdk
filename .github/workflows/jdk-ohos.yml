@@ -139,6 +139,7 @@ jobs:
         env:
           RELEASE_BASE: https://github.com/${{ github.repository }}/releases/download/${{ env.RELEASE_TAG }}
         run: |
+          ulimit -s 65536
           bash scripts/build_ohos_jre.sh \
             --major "${{ matrix.major }}" \
             --arch "${{ matrix.arch }}" \
@@ -153,6 +154,19 @@ jobs:
           mkdir -p dist/logs
           cp "$RUNNER_TEMP"/jdk-work-${{ matrix.major }}-${{ matrix.arch }}/configure-*.log dist/logs/ 2>/dev/null || true
           cp "$RUNNER_TEMP"/jdk-work-${{ matrix.major }}-${{ matrix.arch }}/build-*.log dist/logs/ 2>/dev/null || true
+          WORK="$RUNNER_TEMP/jdk-work-${{ matrix.major }}-${{ matrix.arch }}"
+          {
+            echo "ulimit -s: $(ulimit -s)"
+            find "$WORK" -type f -name adlc | while read -r tool; do
+              echo "=== $tool"
+              file "$tool"
+              ldd "$tool" 2>&1 | head -20
+            done
+            echo "=== exec logs"
+            find "$WORK" -name '_adlc_run_exec.log' -exec sh -c 'echo "--- $1"; cat "$1"' _ {} \;
+            echo "=== make-support failure logs"
+            find "$WORK" -path '*/make-support/failure-logs/*' -exec sh -c 'echo "--- $1"; head -40 "$1"' _ {} \;
+          } > dist/logs/adlc-diagnostics.txt 2>&1
 
       - uses: actions/upload-artifact@v4
         if: always()
