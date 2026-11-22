@@ -22,6 +22,10 @@ on:
         description: Release tag to create/update when publishing
         type: string
         default: jdk-ohos-v1
+      only:
+        description: 'Diagnostics only: build a single target, e.g. "21-aarch64"'
+        type: string
+        default: ""
   push:
     tags:
       - "jdk-ohos-v*"
@@ -41,6 +45,7 @@ env:
 jobs:
   build:
     name: JDK ${{ matrix.major }} / ${{ matrix.arch }}
+    if: ${{ inputs.only == '' || inputs.only == format('{0}-{1}', matrix.major, matrix.arch) }}
     runs-on: ubuntu-latest
     timeout-minutes: 300
     strategy:
@@ -166,6 +171,18 @@ jobs:
             find "$WORK" -name '_adlc_run_exec.log' -exec sh -c 'echo "--- $1"; cat "$1"' _ {} \;
             echo "=== make-support failure logs"
             find "$WORK" -path '*/make-support/failure-logs/*' -exec sh -c 'echo "--- $1"; head -40 "$1"' _ {} \;
+            TOOL=$(find "$WORK" -path '*/hotspot/variant-server/tools/adlc/adlc' -type f | head -1)
+            SRC=$(find "$WORK" -name 'all-ad-src.ad' -path '*/variant-server/*' | head -1)
+            if [ -n "$TOOL" ] && [ -n "$SRC" ]; then
+              cp "$TOOL" dist/logs/adlc-ci || true
+              cp "$SRC" dist/logs/all-ad-src.ad || true
+              sudo apt-get install -y -qq gdb >/dev/null 2>&1 || true
+              gdb -batch -ex run -ex 'bt 25' -ex 'info registers rip' \
+                --args "$TOOL" -q -T -DLINUX=1 -D_GNU_SOURCE=1 -g -DAARCH64=1 \
+                  -D_LP64=1 -DNDEBUG -DPRODUCT "$SRC" \
+                  -c/tmp/ad_aarch64.cpp -h/tmp/ad_aarch64.hpp \
+                  -a/tmp/dfa_aarch64.cpp -v/tmp/adGlobals_aarch64.hpp
+            fi
           } > dist/logs/adlc-diagnostics.txt 2>&1
 
       - uses: actions/upload-artifact@v4
@@ -178,7 +195,7 @@ jobs:
   publish:
     name: Publish runtime release
     needs: build
-    if: ${{ inputs.publish || startsWith(github.ref, 'refs/tags/jdk-ohos-v') }}
+    if: ${{ (inputs.publish || startsWith(github.ref, 'refs/tags/jdk-ohos-v')) && inputs.only == '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
