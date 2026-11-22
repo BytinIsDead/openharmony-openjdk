@@ -230,11 +230,14 @@ jobs:
       - name: Create or update release
         env:
           GH_TOKEN: ${{ github.token }}
+          # No checkout in this job; gh needs the repository named explicitly.
+          GH_REPO: ${{ github.repository }}
         run: |
           NOTES="OpenJDK x86_64 and aarch64 runtime packs for HarmonyOS/OpenHarmony.
 
-          Built from the pinned upstream commits and OHOS patch series recorded in
-          build-inputs.lock.json. OpenJDK is GPLv2 with the Classpath Exception;
+          Built from the pinned upstream commits, the OHOS patch series recorded in
+          build-inputs.lock.json, and the repository-local compatibility patches
+          under scripts/patches/. OpenJDK is GPLv2 with the Classpath Exception;
           each pack preserves the upstream license files and the exact source
           identities in MC4HOS-RUNTIME-NOTICE.txt."
           if ! gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
