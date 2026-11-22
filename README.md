@@ -28,8 +28,9 @@ provenance: pinned upstream JDK sources plus the OHOS patch series, for
 | Runtime | 21 | `aarch64-linux-ohos` (musl) | `jre21-ohos-aarch64.zip` |
 | Runtime | 25 | `aarch64-linux-ohos` (musl) | `jre25-ohos-aarch64.zip` |
 
-Each zip contains a complete JDK image rooted at the archive root
-(`bin/`, `lib/`, `legal/`, `release`). MC4HOS writes its own `runtime.json`
+Each zip contains a runtime image rooted at the archive root (`bin/`, `lib/`,
+`conf/`, `legal/`, `release`); developer-only payload (jmods, sources, demos,
+headers) is pruned at packaging time. MC4HOS writes its own `runtime.json`
 marker after extraction, so the pack itself carries no install state.
 
 ## Release

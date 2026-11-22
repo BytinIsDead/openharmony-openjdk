@@ -389,6 +389,11 @@ rm -rf "$STAGE"
 mkdir -p "$STAGE"
 cp -a "$IMAGE/." "$STAGE/"
 
+# MC4HOS launches games, it does not compile Java. Drop the developer payload
+# (module archives, sources, demos, headers) so the pack stays a runtime.
+rm -rf "$STAGE/jmods" "$STAGE/demo" "$STAGE/man" "$STAGE/include"
+rm -f "$STAGE/lib/src.zip" "$STAGE/lib/ct.sym"
+
 for f in LICENSE ADDITIONAL_LICENSE_INFO ASSEMBLY_EXCEPTION; do
   [ -f "$SRC/$f" ] && cp "$SRC/$f" "$STAGE/"
 done
