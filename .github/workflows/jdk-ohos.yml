@@ -45,9 +45,11 @@ env:
 jobs:
   build:
     name: JDK ${{ matrix.major }} / ${{ matrix.arch }}
-    if: ${{ inputs.only == '' || inputs.only == format('{0}-{1}', matrix.major, matrix.arch) }}
     runs-on: ubuntu-latest
     timeout-minutes: 300
+    env:
+      # `only` exists for adlc diagnostics; normal runs leave it empty.
+      BUILD_MATCH: ${{ inputs.only == '' || inputs.only == format('{0}-{1}', matrix.major, matrix.arch) }}
     strategy:
       fail-fast: false
       max-parallel: 1
@@ -63,13 +65,16 @@ jobs:
             arch: aarch64
     steps:
       - uses: actions/checkout@v4
+        if: env.BUILD_MATCH == 'true'
 
       - uses: actions/setup-java@v4
+        if: env.BUILD_MATCH == 'true'
         with:
           distribution: temurin
           java-version: ${{ matrix.major }}
 
       - name: Host build dependencies
+        if: env.BUILD_MATCH == 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
@@ -86,13 +91,14 @@ jobs:
 
       - name: Cache HarmonyOS toolchain zip
         id: cache
+        if: env.BUILD_MATCH == 'true'
         uses: actions/cache@v4
         with:
           path: ~/commandline-tools.zip
           key: hos-tools-6.1.1.280-v1
 
       - name: Download HarmonyOS command line tools (public, no auth)
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: env.BUILD_MATCH == 'true' && steps.cache.outputs.cache-hit != 'true'
         run: |
           CANDIDATES=(
             "${{ vars.HOS_TOOLS_URL }}"
@@ -113,6 +119,7 @@ jobs:
           exit 1
 
       - name: Unpack toolchain and locate the native SDK
+        if: env.BUILD_MATCH == 'true'
         run: |
           rm -rf ~/hos-tools
           mkdir -p ~/hos-tools
@@ -135,12 +142,14 @@ jobs:
           ls "$OHOS_NATIVE/sysroot/usr/lib/${{ matrix.arch }}-linux-ohos/libc.so"
 
       - name: Fetch pinned build inputs (patches + stubs)
+        if: env.BUILD_MATCH == 'true'
         run: |
           python3 scripts/fetch_inputs.py \
             --major "${{ matrix.major }}" \
             --dest "$RUNNER_TEMP/jdk-inputs-${{ matrix.major }}-${{ matrix.arch }}"
 
       - name: Cross-build and package
+        if: env.BUILD_MATCH == 'true'
         env:
           RELEASE_BASE: https://github.com/${{ github.repository }}/releases/download/${{ env.RELEASE_TAG }}
         run: |
@@ -154,7 +163,7 @@ jobs:
             --output "$GITHUB_WORKSPACE/dist"
 
       - name: Collect build logs on failure
-        if: failure()
+        if: failure() && env.BUILD_MATCH == 'true'
         run: |
           mkdir -p dist/logs
           cp "$RUNNER_TEMP"/jdk-work-${{ matrix.major }}-${{ matrix.arch }}/configure-*.log dist/logs/ 2>/dev/null || true
@@ -186,7 +195,7 @@ jobs:
           } > dist/logs/adlc-diagnostics.txt 2>&1
 
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: always() && env.BUILD_MATCH == 'true'
         with:
           name: runtime-jdk${{ matrix.major }}-${{ matrix.arch }}
           path: dist/
