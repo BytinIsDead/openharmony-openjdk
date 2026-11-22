@@ -48,11 +48,12 @@ Run **Actions → OpenJDK OHOS runtimes → Run workflow** with
 
 ## Consumed by MC4HOS
 
-MC4HOS pins the release in `scripts/bundled-jres.lock.json`
-(`x86CatalogUrl`) and fetches the packs at HAP build time
-(`scripts/fetch_bundled_jres.py`), verifying size and SHA-256 before they are
-bundled. Without a bundled pack the launcher downloads it from the release
-catalog; packs can also be imported over `hdc` from `/data/local/tmp`.
+MC4HOS pins every pack in `scripts/bundled-jres.lock.json` (size and
+SHA-256) and fetches the x86_64 packs from this release at HAP build time
+(`scripts/fetch_bundled_jres.py`), verifying the digests again at install
+time. The release `runtime-catalog.json` is consulted for packs that lack a
+pinned digest. Without a bundled pack the launcher downloads it from the
+release; packs can also be imported over `hdc` from `/data/local/tmp`.
 
 ## Inputs are pinned, not vendored
 
@@ -78,9 +79,12 @@ The OpenJDK sources are cloned from upstream at the commits recorded in
 `scripts/patches/<major>/` carries small upstream-compatible fixups applied
 after the community patch series; a fixup is skipped when the pinned commit
 already contains it. It currently holds the glibc 2.42 `uabs` name-collision
-rename (`uabs` → `g_uabs`, upstream JDK-8354941) needed by the JDK 21 pin and a
+rename (`uabs` → `g_uabs`, upstream JDK-8354941) needed by the JDK 21 pin, a
 `<stdbool.h>` include for the OHOS JavaSound port helper, whose SDK headers use
-`bool` from plain C.
+`bool` from plain C, and a JDK 21 `adlc` fix that initializes all `FrameForm`
+fields (aarch64 defines no `cisc_spilling_operand_name`, and the uninitialized
+field made `adlc` hash heap garbage and crash during the cross-build). JDK 25
+already initializes these fields.
 
 ## Build locally (Linux x86_64)
 
